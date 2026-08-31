@@ -1,0 +1,505 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* TweakCN / ShadCN Theme Tokens (Report Light Mode - High Contrast) */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 199 89% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 40%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 90%;
+    --input: 214.3 31.8% 90%;
+    --ring: 199 89% 40%;
+    --radius: 0.5rem;
+
+    /* App Color Mappings */
+    --app-bg: #050505;
+    --app-card: #09090b;
+    --app-surface: #070708;
+    --app-subcard: #18181b;
+    --app-border: rgba(39, 39, 42, 0.9);
+    --app-border-subtle: rgba(39, 39, 42, 0.5);
+    --app-text-main: #fafafa;
+    --app-text-muted: #a1a1aa;
+    --app-text-dim: #71717a;
+    --chart-grid: #27272a;
+    --chart-axis: #a1a1aa;
+  }
+
+  .theme-deep-space, .dark {
+    /* TweakCN Theme Tokens (Deep Space Dark Mode) */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 187 92% 43%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 187 92% 43%;
+
+    --app-bg: #050505;
+    --app-card: #09090b;
+    --app-surface: #070708;
+    --app-subcard: #18181b;
+    --app-border: rgba(39, 39, 42, 0.9);
+    --app-border-subtle: rgba(39, 39, 42, 0.5);
+    --app-text-main: #fafafa;
+    --app-text-muted: #a1a1aa;
+    --app-text-dim: #71717a;
+    --chart-grid: #27272a;
+    --chart-axis: #a1a1aa;
+  }
+
+  .theme-report-light, .light {
+    --app-bg: #f8fafc;
+    --app-card: #ffffff;
+    --app-surface: #f1f5f9;
+    --app-subcard: #f8fafc;
+    --app-border: #e2e8f0;
+    --app-border-subtle: #cbd5e1;
+    --app-text-main: #0f172a;
+    --app-text-muted: #475569;
+    --app-text-dim: #64748b;
+    --chart-grid: #e2e8f0;
+    --chart-axis: #475569;
+  }
+}
+
+/* ==========================================================================
+   VIEWPORT ARCHITECTURE (True 100dvh Full-Screen Fit & Scroll Containment)
+   ========================================================================== */
+html, body, #root {
+  height: 100%;
+  height: 100dvh;
+  width: 100%;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle, localized custom scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(113, 113, 122, 0.35);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(161, 161, 170, 0.6);
+}
+
+.theme-report-light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.9);
+}
+
+.theme-report-light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.9);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.font-display {
+  font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+}
+
+.font-mono-data {
+  font-family: 'JetBrains Mono', monospace;
+  font-feature-settings: "tnum" on, "zero" on;
+}
+
+/* ==========================================================================
+   HIGH-CONTRAST 'REPORT' LIGHT MODE ADAPTATIONS (TweakCN / ShadCN Spec)
+   Optimized for High-Contrast Executive Reports & Crisp PDF Printing
+   ========================================================================== */
+
+.theme-report-light,
+.theme-report-light body,
+.theme-report-light #root,
+.theme-report-light #root > div {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Sidebar in Report Light Mode */
+.theme-report-light aside,
+.theme-report-light #main-sidebar {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 1px 0 3px 0 rgba(0, 0, 0, 0.03);
+}
+
+.theme-report-light aside .bg-\[\#050505\],
+.theme-report-light aside .bg-\[\#070709\],
+.theme-report-light aside .bg-\[\#070708\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+.theme-report-light aside .bg-zinc-900\/90,
+.theme-report-light aside .bg-zinc-900 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Header & Nav in Report Light Mode */
+.theme-report-light header {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.theme-report-light header .bg-\[\#050505\] {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+
+.theme-report-light header .bg-\[\#070708\] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+.theme-report-light footer {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+/* Deep container background transformations */
+.theme-report-light .bg-\[\#050505\],
+.theme-report-light .bg-\[\#070709\],
+.theme-report-light .bg-\[\#070708\],
+.theme-report-light main.bg-\[\#050505\] {
+  background-color: #f8fafc !important;
+}
+
+.theme-report-light .bg-\[\#09090b\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+.theme-report-light .bg-zinc-950,
+.theme-report-light .bg-zinc-950\/80,
+.theme-report-light .bg-zinc-950\/90 {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+
+.theme-report-light .bg-zinc-900,
+.theme-report-light .bg-zinc-900\/90,
+.theme-report-light .bg-zinc-900\/80,
+.theme-report-light .bg-zinc-900\/70,
+.theme-report-light .bg-zinc-900\/60,
+.theme-report-light .bg-zinc-900\/50,
+.theme-report-light .bg-zinc-900\/40,
+.theme-report-light .bg-zinc-900\/30 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Border overrides */
+.theme-report-light .border-zinc-800,
+.theme-report-light .border-zinc-800\/60,
+.theme-report-light .border-zinc-800\/80,
+.theme-report-light .border-zinc-800\/90,
+.theme-report-light .border-zinc-700,
+.theme-report-light .border-zinc-700\/60,
+.theme-report-light .border-zinc-700\/80,
+.theme-report-light .border-zinc-900 {
+  border-color: #e2e8f0 !important;
+}
+
+.theme-report-light .divide-zinc-800 > :not([hidden]) ~ :not([hidden]),
+.theme-report-light .divide-zinc-700 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0 !important;
+}
+
+/* Interactive Hover States in Report Light Mode */
+.theme-report-light .hover\:bg-zinc-800:hover,
+.theme-report-light .hover\:bg-zinc-800\/60:hover,
+.theme-report-light .hover\:bg-zinc-800\/70:hover,
+.theme-report-light .hover\:bg-zinc-800\/80:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.theme-report-light .hover\:bg-zinc-900:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.theme-report-light .bg-zinc-800,
+.theme-report-light .bg-zinc-800\/60,
+.theme-report-light .bg-zinc-800\/80 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Text readability in Report Light Mode */
+.theme-report-light .text-white,
+.theme-report-light .text-zinc-100,
+.theme-report-light .text-\[\#FAFAFA\] {
+  color: #0f172a !important;
+}
+
+.theme-report-light .text-zinc-200 {
+  color: #1e293b !important;
+}
+
+.theme-report-light .text-zinc-300 {
+  color: #334155 !important;
+}
+
+.theme-report-light .text-zinc-400 {
+  color: #475569 !important;
+}
+
+.theme-report-light .text-zinc-500 {
+  color: #64748b !important;
+}
+
+/* Dropdowns, Inputs, Selects */
+.theme-report-light select,
+.theme-report-light input,
+.theme-report-light textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.theme-report-light select:focus,
+.theme-report-light input:focus,
+.theme-report-light textarea:focus {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15) !important;
+}
+
+/* Badges & Status in Report Light Mode */
+.theme-report-light .bg-emerald-950,
+.theme-report-light .bg-emerald-950\/30,
+.theme-report-light .bg-emerald-950\/40,
+.theme-report-light .bg-emerald-950\/50 {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+.theme-report-light .text-emerald-400 {
+  color: #047857 !important;
+}
+
+.theme-report-light .bg-cyan-950,
+.theme-report-light .bg-cyan-950\/20,
+.theme-report-light .bg-cyan-950\/30,
+.theme-report-light .bg-cyan-950\/40,
+.theme-report-light .bg-cyan-950\/50,
+.theme-report-light .bg-cyan-950\/80 {
+  background-color: #f0fdfa !important;
+  border-color: #99f6e4 !important;
+}
+.theme-report-light .text-cyan-400,
+.theme-report-light .text-cyan-300 {
+  color: #0e7490 !important;
+}
+
+.theme-report-light .bg-amber-950,
+.theme-report-light .bg-amber-950\/30,
+.theme-report-light .bg-amber-950\/40,
+.theme-report-light .bg-amber-950\/50,
+.theme-report-light .bg-amber-950\/80 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+.theme-report-light .text-amber-400,
+.theme-report-light .text-amber-300 {
+  color: #b45309 !important;
+}
+
+.theme-report-light .bg-rose-950,
+.theme-report-light .bg-rose-950\/30,
+.theme-report-light .bg-rose-950\/40,
+.theme-report-light .bg-rose-950\/80 {
+  background-color: #fff1f2 !important;
+  border-color: #fecdd3 !important;
+}
+.theme-report-light .text-rose-400,
+.theme-report-light .text-rose-300 {
+  color: #be123c !important;
+}
+
+.theme-report-light .bg-blue-950,
+.theme-report-light .bg-blue-950\/30,
+.theme-report-light .bg-blue-950\/80 {
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+.theme-report-light .text-blue-400,
+.theme-report-light .text-blue-300 {
+  color: #1d4ed8 !important;
+}
+
+.theme-report-light .bg-purple-950,
+.theme-report-light .bg-purple-950\/30,
+.theme-report-light .bg-purple-950\/80 {
+  background-color: #faf5ff !important;
+  border-color: #e9d5ff !important;
+}
+.theme-report-light .text-purple-400,
+.theme-report-light .text-purple-300 {
+  color: #6b21a8 !important;
+}
+
+/* Modals & Dialogs in Report Light Mode */
+.theme-report-light .bg-\[\#09090b\]\/95,
+.theme-report-light .bg-\[\#09090b\]\/90 {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+}
+
+/* Buttons in Report Light Mode */
+.theme-report-light button.bg-white {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+.theme-report-light button.bg-white svg {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
+.theme-report-light button.bg-white:hover {
+  background-color: #1e293b !important;
+}
+
+.theme-report-light .border-white {
+  border-color: #0f172a !important;
+}
+
+/* Charts & Recharts in Report Light Mode */
+.theme-report-light .recharts-cartesian-grid-horizontal line,
+.theme-report-light .recharts-cartesian-grid-vertical line {
+  stroke: #e2e8f0 !important;
+}
+
+.theme-report-light .recharts-text.recharts-cartesian-axis-tick-value {
+  fill: #64748b !important;
+}
+
+.theme-report-light .recharts-default-tooltip {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* SVG Guage & Diagram Text in Report Light Mode */
+.theme-report-light svg text.fill-white {
+  fill: #0f172a !important;
+}
+
+.theme-report-light svg circle[fill="#09090b"] {
+  fill: #ffffff !important;
+  stroke: #94a3b8 !important;
+}
+
+.theme-report-light svg path[stroke="#18181b"] {
+  stroke: #e2e8f0 !important;
+}
+
+
+/* ==========================================================================
+   PRINT MEDIA OPTIMIZATION (HIGH-CONTRAST REPORT STYLING)
+   ========================================================================== */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  header,
+  footer,
+  .no-print,
+  button:not(.print-include),
+  .theme-toggle-btn {
+    display: none !important;
+  }
+
+  main {
+    background-color: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .bg-\[\#09090b\],
+  .bg-\[\#050505\],
+  .bg-zinc-900,
+  .bg-zinc-950 {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+
+  .text-white,
+  .text-zinc-100,
+  .text-zinc-200 {
+    color: #000000 !important;
+  }
+
+  .text-zinc-400,
+  .text-zinc-500 {
+    color: #334155 !important;
+  }
+
+  /* Page break rules for report printing */
+  .page-break-before {
+    page-break-before: always;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid;
+  }
+}

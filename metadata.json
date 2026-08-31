@@ -1,0 +1,6 @@
+{
+  "name": "QUANTRISKSCALE - Open FAIR Risk Analysis Tool",
+  "description": "QUANTRISKSCALE: Air-gapped, portable Open FAIR quantitative information risk analysis tool with SQLite database, interactive React Monte Carlo dashboard, loss exceedance charts, and local AI endpoint integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
