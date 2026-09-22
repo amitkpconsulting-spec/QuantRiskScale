@@ -73,10 +73,12 @@ export const AssetThreatRegister: React.FC<AssetThreatRegisterProps> = ({
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 lg:p-6 w-full space-y-6">
       {/* Top Header */}
-      <div className="bg-[#09090b] border border-zinc-800 rounded-xl p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <div className="w-full bg-[#09090b] bg-gradient-to-r from-[#09090b] via-[#0d0e14] to-[#09090b] border border-zinc-800 rounded-xl p-5 shadow-2xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Ambient subtle glow overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.08),rgba(255,255,255,0))] pointer-events-none" />
+        <div className="relative z-10">
           <div className="flex items-center space-x-2 mb-1.5 font-mono">
             <span className="px-2 py-0.5 rounded text-[10px] font-black bg-zinc-800 text-cyan-400 border border-zinc-700 uppercase tracking-widest">
               Risk Scoping Registers
@@ -90,7 +92,7 @@ export const AssetThreatRegister: React.FC<AssetThreatRegisterProps> = ({
         </div>
 
         {/* Sub-tab toggle & Action */}
-        <div className="flex items-center space-x-2 self-start md:self-auto font-mono">
+        <div className="flex items-center space-x-2 self-start md:self-auto font-mono relative z-10">
           {onOpenNewSimulationModal && (
             <button
               onClick={onOpenNewSimulationModal}

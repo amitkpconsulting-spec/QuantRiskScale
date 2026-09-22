@@ -174,11 +174,13 @@ export const FairDashboard: React.FC<FairDashboardProps> = ({
   ];
 
   return (
-    <div className="p-3.5 sm:p-5 lg:p-6 w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-5">
+    <div className="p-3.5 sm:p-5 lg:p-6 w-full space-y-4 sm:space-y-5 min-h-full">
       {/* Scenario Header Overview */}
-      <div className="bg-[#09090b] border border-zinc-800 rounded-xl p-4 sm:p-5 shadow-2xl relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-          <div>
+      <div className="w-full bg-[#09090b] bg-gradient-to-r from-[#09090b] via-[#0d0e14] to-[#09090b] border border-zinc-800 rounded-xl p-4 sm:p-5 shadow-2xl relative overflow-hidden">
+        {/* Subtle ambient mesh overlay to eliminate flat blank spots */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.08),rgba(255,255,255,0))] pointer-events-none" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10 w-full">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1.5 font-mono">
               <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-zinc-900 text-cyan-400 border border-zinc-700">
                 {scenario.category}
@@ -187,8 +189,8 @@ export const FairDashboard: React.FC<FairDashboardProps> = ({
               <span className="text-zinc-600">•</span>
               <span className="text-xs text-zinc-400 font-medium">THREAT: <strong className="text-white font-bold">{scenario.threatCommunity}</strong></span>
             </div>
-            <h2 className="text-2xl font-black font-display text-white tracking-tight uppercase">{scenario.name}</h2>
-            <p className="text-xs text-zinc-400 max-w-3xl mt-1 leading-relaxed font-sans">{scenario.description}</p>
+            <h2 className="text-2xl font-black font-display text-white tracking-tight uppercase truncate">{scenario.name}</h2>
+            <p className="text-xs text-zinc-400 max-w-5xl mt-1 leading-relaxed font-sans">{scenario.description}</p>
           </div>
 
           <div className="flex items-center space-x-2.5 self-start md:self-auto shrink-0 font-mono">

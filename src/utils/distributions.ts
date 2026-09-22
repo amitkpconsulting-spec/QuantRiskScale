@@ -51,14 +51,63 @@ export function sampleBeta(p: number, q: number, randomFn = Math.random): number
 }
 
 /**
+ * Normal (Gaussian) Distribution Sampler
+ * Mean is taken as the mode, and standard deviation is derived from 90% confidence interval:
+ * (high - low) / (2 * 1.6449) = (high - low) / 3.2897
+ */
+export function sampleNormal(
+  estimate: ThreePointEstimate,
+  randomFn = Math.random
+): number {
+  const { low, mode, high } = estimate;
+  if (low >= high) return mode;
+  const mean = mode;
+  const stdDev = Math.max(0.00001, (high - low) / 3.2897);
+  const z = sampleStandardNormal(randomFn);
+  const val = mean + z * stdDev;
+  return low >= 0 ? Math.max(0, val) : val;
+}
+
+/**
+ * LogNormal Distribution Sampler
+ * Fits a log-normal distribution parameterized by 90% confidence interval [low, high]
+ * Values are strictly positive with a characteristic long right-side tail.
+ */
+export function sampleLogNormal(
+  estimate: ThreePointEstimate,
+  randomFn = Math.random
+): number {
+  const { low, mode, high } = estimate;
+  if (low >= high) return mode;
+
+  const safeLow = Math.max(0.0001, low);
+  const safeHigh = Math.max(safeLow * 1.001, high);
+  const lnLow = Math.log(safeLow);
+  const lnHigh = Math.log(safeHigh);
+  const lnSigma = Math.max(0.0001, (lnHigh - lnLow) / 3.2897);
+  const lnMu = (lnLow + lnHigh) / 2;
+
+  const z = sampleStandardNormal(randomFn);
+  return Math.exp(lnMu + z * lnSigma);
+}
+
+/**
  * Beta-PERT (Modified PERT) Distribution Sampler
  * In Open FAIR, Beta-PERT is the gold standard for expert estimates.
  * Shape factor gamma default is 4 (confidence = 4). Higher confidence narrows the peak.
+ * Automatically delegates to Normal or LogNormal if configured on estimate.distributionType.
  */
 export function samplePert(
   estimate: ThreePointEstimate,
   randomFn = Math.random
 ): number {
+  if (estimate.distributionType === 'normal') {
+    return sampleNormal(estimate, randomFn);
+  }
+  if (estimate.distributionType === 'lognormal') {
+    return sampleLogNormal(estimate, randomFn);
+  }
+
   const { low, mode, high, confidence = 4 } = estimate;
 
   if (low >= high) return mode;
@@ -79,6 +128,16 @@ export function samplePert(
   const betaSample = sampleBeta(p, q, randomFn);
   const val = low + betaSample * range;
   return Math.max(low, Math.min(high, val));
+}
+
+/**
+ * Sample estimate according to its distribution type (PERT, LogNormal, Normal)
+ */
+export function sampleEstimate(
+  estimate: ThreePointEstimate,
+  randomFn = Math.random
+): number {
+  return samplePert(estimate, randomFn);
 }
 
 /**

@@ -32,6 +32,7 @@ import {
   ThreatRegisterItem
 } from './types/fair';
 import { runFairSimulation } from './services/fairEngine';
+import { ThreatDomain } from './data/threatCatalogs';
 import {
   getSqliteDb,
   saveScenarioToSqlite,
@@ -47,6 +48,7 @@ export default function App() {
   const [scenarios, setScenarios] = useState<FairScenario[]>(DEFAULT_SCENARIOS);
   const [activeScenarioId, setActiveScenarioId] = useState<string>(DEFAULT_SCENARIOS[0].id);
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceId>('cockpit');
+  const [selectedThreatDomain, setSelectedThreatDomain] = useState<ThreatDomain>('ai-owasp');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
   // Sub-view selection within Scenario Lab (Builder vs Registers)
@@ -233,6 +235,11 @@ export default function App() {
           setShowGlossaryModal(true);
         }}
         onOpenPdfModal={() => setShowPdfModal(true)}
+        activeThreatDomain={selectedThreatDomain}
+        onSelectThreatDomain={(domain) => {
+          setSelectedThreatDomain(domain);
+          setActiveWorkspace('ai-defense');
+        }}
       />
 
       {/* Main Content Area */}
@@ -286,7 +293,7 @@ export default function App() {
 
           {/* WORKSPACE 2: SCENARIO & MODEL LAB */}
           {activeWorkspace === 'lab' && (
-            <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-5">
+            <div className="p-4 lg:p-6 w-full space-y-5">
               {/* Lab Sub-navigation Switcher */}
               <div className="flex items-center justify-between bg-[#09090b] border border-zinc-800 rounded-xl p-2 font-mono text-xs">
                 <div className="flex items-center space-x-1.5">
@@ -341,20 +348,22 @@ export default function App() {
             </div>
           )}
 
-          {/* WORKSPACE 3: AI & THREAT DEFENSE */}
+          {/* WORKSPACE 3: THREAT DEFENCE SCENARIOS */}
           {activeWorkspace === 'ai-defense' && (
-            <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6">
+            <div className="p-4 lg:p-6 w-full space-y-6">
               <AiRiskRegisterHub
                 onLoadScenario={(sc) => handleLoadAiScenario(sc)}
                 onNavigateToBuilder={() => setActiveWorkspace('lab')}
                 activeScenarioId={activeScenarioId}
+                selectedDomain={selectedThreatDomain}
+                onDomainChange={setSelectedThreatDomain}
               />
             </div>
           )}
 
           {/* WORKSPACE 4: DATABASE & SNAPSHOTS */}
           {activeWorkspace === 'sqlite' && (
-            <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6">
+            <div className="p-4 lg:p-6 w-full space-y-6">
               <SqliteManager
                 onDatabaseReloaded={handleDatabaseReloaded}
               />
@@ -420,6 +429,7 @@ export default function App() {
           setShowAiCopilotDrawer(false);
           setActiveWorkspace('lab');
         }}
+        onApplyScenario={handleCreateNewScenario}
       />
 
       {/* Executive PDF Report Modal */}
@@ -463,6 +473,7 @@ export default function App() {
           setGlossarySearchQuery('');
           setShowGlossaryModal(true);
         }}
+        onOpenNewSimulationModal={() => setShowNewSimulationModal(true)}
         isSidebarCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed(prev => !prev)}
       />

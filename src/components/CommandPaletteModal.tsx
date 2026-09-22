@@ -28,6 +28,7 @@ interface CommandPaletteModalProps {
   onOpenAiAdvisory: () => void;
   onOpenPdfModal: () => void;
   onOpenGlossaryModal: () => void;
+  onOpenNewSimulationModal?: () => void;
   isSidebarCollapsed?: boolean;
   onToggleSidebar?: () => void;
 }
@@ -44,6 +45,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onOpenAiAdvisory,
   onOpenPdfModal,
   onOpenGlossaryModal,
+  onOpenNewSimulationModal,
   isSidebarCollapsed,
   onToggleSidebar
 }) => {
@@ -93,6 +95,17 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       icon: Sliders,
       action: () => {
         onOpenQuickTune();
+        onClose();
+      }
+    },
+    {
+      id: 'action-guided-intake',
+      title: 'Open Stakeholder Guided Intake (Non-Math)',
+      subtitle: 'Conversational 3-step Open FAIR risk quantification for non-technical stakeholders',
+      category: 'Model',
+      icon: Sparkles,
+      action: () => {
+        if (onOpenNewSimulationModal) onOpenNewSimulationModal();
         onClose();
       }
     },

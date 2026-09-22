@@ -14,7 +14,8 @@ import {
   RotateCcw,
   Command,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Bot
 } from 'lucide-react';
 import { FairScenario, SimulationResult } from '../types/fair';
 import { ThemeToggle } from './ThemeToggle';
@@ -209,13 +210,23 @@ export const UnifiedTopBar: React.FC<UnifiedTopBarProps> = ({
           <span>Tune Model</span>
         </button>
 
+        {/* Stakeholder Guided Intake */}
+        <button
+          onClick={onOpenNewSimulationModal}
+          className="hidden md:flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 border border-cyan-800/80 text-xs font-mono font-semibold transition-colors shadow-sm"
+          title="Open FAIR™ 3-Step Stakeholder Guided Intake (Non-Math)"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Guided Intake</span>
+        </button>
+
         {/* AI Advisory Drawer */}
         <button
           onClick={onOpenAiCopilot}
-          className="hidden md:flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-cyan-950/30 hover:bg-cyan-950/60 text-cyan-300 border border-cyan-800/80 text-xs font-mono font-semibold transition-colors"
+          className="hidden lg:flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 text-xs font-mono font-semibold transition-colors"
           title="AI Risk Advisory"
         >
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          <Bot className="w-3.5 h-3.5 text-zinc-400" />
           <span>AI Advisory</span>
         </button>
 

@@ -1,8 +1,11 @@
+export type DistributionType = 'pert' | 'lognormal' | 'normal';
+
 export interface ThreePointEstimate {
   low: number;
   mode: number; // most likely
   high: number;
   confidence: number; // Shape parameter gamma, default 4 (typical PERT)
+  distributionType?: DistributionType;
   enabled?: boolean;
 }
 

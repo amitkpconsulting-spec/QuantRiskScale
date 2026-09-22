@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ShieldAlert,
   Brain,
@@ -24,7 +24,8 @@ import {
   Sliders,
   ChevronDown,
   ChevronUp,
-  Info
+  Info,
+  Shield
 } from 'lucide-react';
 import {
   AONA_AI_RISK_REGISTER,
@@ -34,19 +35,40 @@ import {
   convertAonaRiskToFairScenario,
   convertOwaspThreatToFairScenario
 } from '../data/aiRiskData';
+import { ThreatDomain } from '../data/threatCatalogs';
+import { ThreatDomainCatalogView } from './ThreatDomainCatalogView';
 import { FairScenario } from '../types/fair';
 
 interface AiRiskRegisterHubProps {
   onLoadScenario: (scenario: FairScenario) => void;
   onNavigateToBuilder?: () => void;
   activeScenarioId?: string;
+  selectedDomain?: ThreatDomain;
+  onDomainChange?: (domain: ThreatDomain) => void;
 }
 
 export const AiRiskRegisterHub: React.FC<AiRiskRegisterHubProps> = ({
   onLoadScenario,
   onNavigateToBuilder,
-  activeScenarioId
+  activeScenarioId,
+  selectedDomain = 'ai-owasp',
+  onDomainChange
 }) => {
+  const [currentDomain, setCurrentDomain] = useState<ThreatDomain>(selectedDomain);
+
+  useEffect(() => {
+    if (selectedDomain && selectedDomain !== currentDomain) {
+      setCurrentDomain(selectedDomain);
+    }
+  }, [selectedDomain]);
+
+  const handleDomainChange = (domain: ThreatDomain) => {
+    setCurrentDomain(domain);
+    if (onDomainChange) {
+      onDomainChange(domain);
+    }
+  };
+
   const [activeView, setActiveView] = useState<'aona' | 'owasp' | 'md-simulator' | 'playbooks'>('aona');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -186,42 +208,97 @@ export const AiRiskRegisterHub: React.FC<AiRiskRegisterHubProps> = ({
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 lg:p-6 w-full space-y-6 min-h-full font-mono">
       {/* Top Banner / USP */}
-      <div className="bg-gradient-to-r from-zinc-950 via-[#0a0f18] to-zinc-950 border border-cyan-500/30 rounded-xl p-5 shadow-2xl relative overflow-hidden">
+      <div className="w-full bg-gradient-to-r from-zinc-950 via-[#0a0f18] to-zinc-950 border border-cyan-500/30 rounded-xl p-5 shadow-2xl relative overflow-hidden">
+        {/* Subtle radial ambient glow overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.08),rgba(255,255,255,0))] pointer-events-none" />
         <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
-          <div>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10 w-full">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-2 font-mono">
               <span className="px-2.5 py-0.5 rounded text-[10px] font-black bg-cyan-950/80 text-cyan-400 border border-cyan-500/40 uppercase tracking-widest flex items-center space-x-1">
                 <Sparkles className="w-3 h-3 text-cyan-400" />
-                <span>Next-Gen Risk Quantification</span>
+                <span>Enterprise Quantitative Risk Defense</span>
               </span>
               <span className="text-zinc-500">•</span>
-              <span className="text-xs text-zinc-400 font-mono">Model Race &amp; Autonomous Agent Security</span>
+              <span className="text-xs text-zinc-400 font-mono">Multi-Domain Threat Simulations</span>
             </div>
             <h2 className="text-xl lg:text-2xl font-black text-white font-display tracking-tight uppercase">
-              AI Risk Register &amp; OWASP Agentic Threat Navigator
+              Threat Defence Scenarios &amp; Risk Register Hub
             </h2>
-            <p className="text-xs text-zinc-300 font-mono mt-1 max-w-3xl leading-relaxed">
-              Traditional cyber risks are shifting as enterprises adopt Generative AI, Tool-Chaining, Model Context Protocols (MCP), and Autonomous Multi-Agent Swarms.
-              Quantify financial exposure using Open FAIR Beta-PERT Monte Carlo simulations directly from structured Markdown registers.
+            <p className="text-xs text-zinc-300 font-mono mt-1 w-full max-w-5xl leading-relaxed">
+              Select threat scenarios across AI &amp; OWASP Agentic risks, Information Security breaches, Cloud &amp; Infrastructure failures, SANS Top 25 software vulnerabilities, or Regulatory compliance mandates. Quantify financial loss exposure using Open FAIR Beta-PERT Monte Carlo simulations.
             </p>
           </div>
 
           <div className="flex items-center space-x-2 self-start lg:self-auto">
-            <div className="px-3.5 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-center font-mono">
-              <div className="text-[10px] uppercase text-zinc-400 font-bold">Aona Risks</div>
-              <div className="text-lg font-black text-cyan-400">30</div>
+            <div className="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-center font-mono">
+              <div className="text-[10px] uppercase text-zinc-400 font-bold">Threat Domains</div>
+              <div className="text-lg font-black text-cyan-400">5</div>
             </div>
-            <div className="px-3.5 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-center font-mono">
-              <div className="text-[10px] uppercase text-zinc-400 font-bold">OWASP Threats</div>
-              <div className="text-lg font-black text-purple-400">17 (T1-T17)</div>
+            <div className="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-center font-mono">
+              <div className="text-[10px] uppercase text-zinc-400 font-bold">AI &amp; OWASP</div>
+              <div className="text-lg font-black text-purple-400">47</div>
             </div>
-            <div className="px-3.5 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-center font-mono">
-              <div className="text-[10px] uppercase text-zinc-400 font-bold">Playbooks</div>
-              <div className="text-lg font-black text-emerald-400">6</div>
+            <div className="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-center font-mono">
+              <div className="text-[10px] uppercase text-zinc-400 font-bold">Regulatory &amp; Compliance</div>
+              <div className="text-lg font-black text-amber-400">7 Scenarios</div>
             </div>
+          </div>
+        </div>
+
+        {/* Threat Scenario Category Selector Dropdown & Quick Tabs */}
+        <div className="mt-5 pt-4 border-t border-zinc-800/80 space-y-3 relative z-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center space-x-2">
+              <ShieldAlert className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span className="text-xs font-mono font-bold uppercase text-zinc-300">
+                Threat Scenario Domain:
+              </span>
+            </div>
+
+            <div className="flex-1 max-w-xl">
+              <div className="relative">
+                <select
+                  value={currentDomain}
+                  onChange={(e) => handleDomainChange(e.target.value as ThreatDomain)}
+                  className="w-full bg-[#050505] border border-cyan-500/50 text-white font-mono text-xs rounded-xl px-3.5 py-2 font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-md shadow-cyan-950/40 cursor-pointer appearance-none pr-9"
+                >
+                  <option value="ai-owasp">🤖 AI Threats / OWASP (Agentic AI &amp; AONA 30 Register)</option>
+                  <option value="infosec">🛡️ Information Sec Threats (Ransomware, BEC, Insider, Supply Chain)</option>
+                  <option value="tech">⚡ Technology Threats (Cloud Outage, API Cascading, DDoS, DB Desync)</option>
+                  <option value="sans">🔍 SANS Top 25 &amp; CWE Threats (SQL Injection, RCE, Auth Bypass, SSRF)</option>
+                  <option value="regulatory">📋 Regulatory &amp; Compliance Risk (DPDPA ₹250 Cr, GDPR €20M / 4%, SEC 8-K, DORA)</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-cyan-400">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar pt-1 font-mono text-xs">
+            {[
+              { id: 'ai-owasp' as ThreatDomain, label: 'AI & OWASP Agentic', icon: '🤖' },
+              { id: 'infosec' as ThreatDomain, label: 'Information Sec', icon: '🛡️' },
+              { id: 'tech' as ThreatDomain, label: 'Technology Threats', icon: '⚡' },
+              { id: 'sans' as ThreatDomain, label: 'SANS Top 25 / CWE', icon: '🔍' },
+              { id: 'regulatory' as ThreatDomain, label: 'Regulatory Mandates', icon: '📋' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => handleDomainChange(tab.id)}
+                className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-xs font-bold transition-all flex items-center space-x-1.5 border ${
+                  currentDomain === tab.id
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-xs'
+                    : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:text-zinc-200 hover:border-zinc-700'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -237,60 +314,74 @@ export const AiRiskRegisterHub: React.FC<AiRiskRegisterHubProps> = ({
         )}
       </div>
 
-      {/* Navigation Sub-Tabs */}
-      <div className="flex items-center justify-between border-b border-zinc-800 pb-3 flex-wrap gap-3">
-        <div className="flex items-center space-x-2 font-mono">
-          <button
-            onClick={() => setActiveView('aona')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border ${
-              activeView === 'aona'
-                ? 'bg-cyan-950/80 border-cyan-500 text-cyan-300 shadow-md shadow-cyan-950/50'
-                : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Aona AI Risk Register (30)</span>
-          </button>
+      {/* Conditionally render non-AI catalog views or AI sub-navigation */}
+      {currentDomain !== 'ai-owasp' ? (
+        <ThreatDomainCatalogView
+          domain={currentDomain}
+          onLoadScenario={onLoadScenario}
+          onNavigateToBuilder={onNavigateToBuilder}
+          activeScenarioId={activeScenarioId}
+          onSimulateSuccess={(msg) => {
+            setSimulationStatusMsg(msg);
+            setTimeout(() => setSimulationStatusMsg(null), 5000);
+          }}
+        />
+      ) : (
+        <>
+          {/* Navigation Sub-Tabs for AI & OWASP */}
+          <div className="flex items-center justify-between border-b border-zinc-800 pb-3 flex-wrap gap-3">
+            <div className="flex items-center space-x-2 font-mono">
+              <button
+                onClick={() => setActiveView('aona')}
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border ${
+                  activeView === 'aona'
+                    ? 'bg-cyan-950/80 border-cyan-500 text-cyan-300 shadow-md shadow-cyan-950/50'
+                    : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Aona AI Risk Register (30)</span>
+              </button>
 
-          <button
-            onClick={() => setActiveView('owasp')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border ${
-              activeView === 'owasp'
-                ? 'bg-purple-950/80 border-purple-500 text-purple-300 shadow-md shadow-purple-950/50'
-                : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
-            }`}
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>OWASP Agentic Threats (T1-T17)</span>
-          </button>
+              <button
+                onClick={() => setActiveView('owasp')}
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border ${
+                  activeView === 'owasp'
+                    ? 'bg-purple-950/80 border-purple-500 text-purple-300 shadow-md shadow-purple-950/50'
+                    : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
+                }`}
+              >
+                <ShieldAlert className="w-3.5 h-3.5" />
+                <span>OWASP Agentic Threats (T1-T17)</span>
+              </button>
 
-          <button
-            onClick={() => setActiveView('md-simulator')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border ${
-              activeView === 'md-simulator'
-                ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow-md shadow-emerald-950/50'
-                : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
-            }`}
-          >
-            <Code2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Markdown Simulator &amp; Importer</span>
-          </button>
+              <button
+                onClick={() => setActiveView('md-simulator')}
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border ${
+                  activeView === 'md-simulator'
+                    ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow-md shadow-emerald-950/50'
+                    : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
+                }`}
+              >
+                <Code2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Markdown Simulator &amp; Importer</span>
+              </button>
 
-          <button
-            onClick={() => setActiveView('playbooks')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border ${
-              activeView === 'playbooks'
-                ? 'bg-amber-950/80 border-amber-500 text-amber-300 shadow-md shadow-amber-950/50'
-                : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>Mitigation Playbooks (6)</span>
-          </button>
-        </div>
+              <button
+                onClick={() => setActiveView('playbooks')}
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border ${
+                  activeView === 'playbooks'
+                    ? 'bg-amber-950/80 border-amber-500 text-amber-300 shadow-md shadow-amber-950/50'
+                    : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Mitigation Playbooks (6)</span>
+              </button>
+            </div>
 
-        {/* Global Search */}
-        <div className="relative w-full sm:w-64">
+            {/* Global Search */}
+            <div className="relative w-full sm:w-64">
           <input
             type="text"
             placeholder="Search risks, systems, controls..."
@@ -738,6 +829,8 @@ export const AiRiskRegisterHub: React.FC<AiRiskRegisterHubProps> = ({
             ))}
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

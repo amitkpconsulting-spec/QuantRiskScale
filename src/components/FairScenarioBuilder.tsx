@@ -17,7 +17,8 @@ import {
   History,
   RotateCcw,
   Check,
-  AlertCircle
+  AlertCircle,
+  HelpCircle
 } from 'lucide-react';
 import { FairScenario, ThreePointEstimate, FairModelBranch, ScenarioSnapshot } from '../types/fair';
 import {
@@ -27,6 +28,11 @@ import {
   updateScenarioSnapshotNote
 } from '../services/sqliteService';
 import { ScenarioVersionHistoryModal } from './ScenarioVersionHistoryModal';
+import {
+  DistributionStakeholderTooltip,
+  ParameterContextType
+} from './DistributionStakeholderTooltip';
+import { StakeholderDistributionPrimerModal } from './StakeholderDistributionPrimerModal';
 
 interface FairScenarioBuilderProps {
   scenario: FairScenario;
@@ -48,6 +54,7 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
   const [snapshots, setSnapshots] = useState<ScenarioSnapshot[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
+  const [showDistributionPrimer, setShowDistributionPrimer] = useState<boolean>(false);
   const [revertMessage, setRevertMessage] = useState<string | null>(null);
 
   // Load snapshots for this scenario
@@ -143,23 +150,37 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
     minBound = 0,
     maxBound = 10000,
     step = 1,
-    helpText = ''
+    helpText = '',
+    contextType: ParameterContextType = 'financial-primary'
   ) => {
+    const currentDist = estimate.distributionType || 'pert';
+
     return (
-      <div className="bg-[#050505] border border-zinc-800 rounded-xl p-4 space-y-3 font-mono">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-black text-white font-display uppercase tracking-wider flex items-center space-x-1.5">
-            <span>{label}</span>
-            {unit && <span className="text-[10px] text-zinc-500 font-mono">({unit})</span>}
+      <div className="bg-[#050505] border border-zinc-800 rounded-xl p-4 space-y-3 font-mono transition-all hover:border-zinc-700">
+        <div className="flex items-center justify-between gap-2">
+          <label className="text-xs font-black text-white font-display uppercase tracking-wider flex items-center space-x-1.5 truncate">
+            <span className="truncate">{label}</span>
+            {unit && <span className="text-[10px] text-zinc-500 font-mono shrink-0">({unit})</span>}
           </label>
-          {estimate.enabled !== undefined && (
-            <input
-              type="checkbox"
-              checked={estimate.enabled}
-              onChange={(e) => onChange({ ...estimate, enabled: e.target.checked })}
-              className="rounded bg-zinc-800 border-zinc-700 text-cyan-500 focus:ring-0 w-3.5 h-3.5"
+          <div className="flex items-center space-x-2 shrink-0">
+            {/* Context-aware Stakeholder Tooltip & Distribution Selector */}
+            <DistributionStakeholderTooltip
+              parameterName={label}
+              unit={unit}
+              contextType={contextType}
+              currentDistribution={currentDist}
+              onSelectDistribution={(dist) => onChange({ ...estimate, distributionType: dist })}
             />
-          )}
+            {estimate.enabled !== undefined && (
+              <input
+                type="checkbox"
+                checked={estimate.enabled}
+                onChange={(e) => onChange({ ...estimate, enabled: e.target.checked })}
+                title="Enable / Disable this parameter in simulation"
+                className="rounded bg-zinc-800 border-zinc-700 text-cyan-500 focus:ring-0 w-3.5 h-3.5 cursor-pointer"
+              />
+            )}
+          </div>
         </div>
 
         {helpText && <p className="text-[11px] text-zinc-400 leading-tight font-mono">{helpText}</p>}
@@ -205,28 +226,51 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
           </div>
         </div>
 
-        {/* Confidence / Shape Slider */}
-        <div className="flex items-center space-x-2 pt-1.5 border-t border-zinc-800">
-          <span className="text-[10px] text-zinc-400 font-mono uppercase whitespace-nowrap">Confidence (γ): <strong className="text-white">{estimate.confidence || 4}</strong></span>
-          <input
-            type="range"
-            min="1"
-            max="10"
-            step="0.5"
-            value={estimate.confidence || 4}
-            onChange={(e) => onChange({ ...estimate, confidence: parseFloat(e.target.value) })}
-            className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-          />
-        </div>
+        {/* Dynamic Model Guidance based on Distribution Type */}
+        {currentDist === 'pert' ? (
+          <div className="flex items-center space-x-2 pt-1.5 border-t border-zinc-800">
+            <span className="text-[10px] text-zinc-400 font-mono uppercase whitespace-nowrap">
+              PERT Confidence (γ): <strong className="text-white">{estimate.confidence || 4}</strong>
+            </span>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              step="0.5"
+              value={estimate.confidence || 4}
+              onChange={(e) => onChange({ ...estimate, confidence: parseFloat(e.target.value) })}
+              className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+              title="Higher confidence concentrates probabilities tighter around the most likely mode"
+            />
+          </div>
+        ) : currentDist === 'lognormal' ? (
+          <div className="flex items-center justify-between pt-1.5 border-t border-zinc-800 text-[10px] text-amber-400/90 font-mono">
+            <div className="flex items-center space-x-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span>LogNormal Model: Right-skewed fat tail (No negative values)</span>
+            </div>
+            <span className="text-zinc-500 text-[9px]">90% CI: [{estimate.low} - {estimate.high}]</span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between pt-1.5 border-t border-zinc-800 text-[10px] text-purple-400/90 font-mono">
+            <div className="flex items-center space-x-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+              <span>Normal Model: Balanced symmetrical bell curve</span>
+            </div>
+            <span className="text-zinc-500 text-[9px]">Mean: {estimate.mode}</span>
+          </div>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 lg:p-6 w-full space-y-6">
       {/* Top Header & Save Actions */}
-      <div className="bg-[#09090b] border border-zinc-800 rounded-xl p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <div className="w-full bg-[#09090b] bg-gradient-to-r from-[#09090b] via-[#0d0e14] to-[#09090b] border border-zinc-800 rounded-xl p-5 shadow-2xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Ambient subtle glow overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.08),rgba(255,255,255,0))] pointer-events-none" />
+        <div className="relative z-10">
           <div className="flex items-center space-x-2 mb-1.5 font-mono">
             <span className="px-2 py-0.5 rounded text-[10px] font-black bg-zinc-800 text-cyan-400 border border-zinc-700 uppercase tracking-widest">
               FAIR Ontology Builder
@@ -237,7 +281,7 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
           <p className="text-xs text-zinc-400 font-mono mt-0.5">Configure Beta-PERT 3-point estimates across the Open FAIR decomposition hierarchy.</p>
         </div>
 
-        <div className="flex items-center space-x-3 font-mono">
+        <div className="flex items-center space-x-3 font-mono relative z-10">
           {onOpenNewSimulationModal && (
             <button
               onClick={onOpenNewSimulationModal}
@@ -260,6 +304,16 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             <span className="ml-1 px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-700/60 text-[10px]">
               {snapshots.length}
             </span>
+          </button>
+
+          {/* Stakeholder Distribution Primer Guide Button */}
+          <button
+            onClick={() => setShowDistributionPrimer(true)}
+            className="px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-amber-400 hover:text-amber-300 border border-zinc-700 hover:border-amber-500/50 text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5 transition-all shadow-sm"
+            title="Open Stakeholder Guide to Distribution Types (Normal, LogNormal, PERT)"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+            <span>Distribution Guide</span>
           </button>
 
           <button
@@ -502,7 +556,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
               0,
               1000,
               0.1,
-              'Estimate the annual number of successful loss events.'
+              'Estimate the annual number of successful loss events.',
+              'threat-frequency'
             )}
           </div>
         ) : (
@@ -518,7 +573,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
                   0,
                   10000,
                   0.5,
-                  'Frequency of threat agent taking action against asset.'
+                  'Frequency of threat agent taking action against asset.',
+                  'threat-frequency'
                 )
               ) : (
                 <div className="space-y-3">
@@ -530,7 +586,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
                     0,
                     10000,
                     1,
-                    'Number of times threat community comes in contact with asset.'
+                    'Number of times threat community comes in contact with asset.',
+                    'threat-frequency'
                   )}
                   {renderThreePointControl(
                     'Probability of Action (PoA)',
@@ -540,7 +597,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
                     0,
                     1,
                     0.05,
-                    'Probability that contact results in an active threat attack.'
+                    'Probability that contact results in an active threat attack.',
+                    'threat-frequency'
                   )}
                 </div>
               )}
@@ -555,7 +613,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
                   0,
                   1,
                   0.05,
-                  'Likelihood that attack overcomes defenses.'
+                  'Likelihood that attack overcomes defenses.',
+                  'vulnerability'
                 )
               ) : (
                 <div className="space-y-3">
@@ -567,7 +626,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
                     0,
                     100,
                     1,
-                    'Capability level of threat actor relative to overall threat spectrum.'
+                    'Capability level of threat actor relative to overall threat spectrum.',
+                    'vulnerability'
                   )}
                   {renderThreePointControl(
                     'Resistance Strength (RS / Control Strength)',
@@ -577,7 +637,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
                     0,
                     100,
                     1,
-                    'Strength of security controls against threat capability.'
+                    'Strength of security controls against threat capability.',
+                    'vulnerability'
                   )}
                 </div>
               )}
@@ -607,7 +668,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             1000000,
             10,
-            'Operational disruption, idle wages, lost sales velocity.'
+            'Operational disruption, idle wages, lost sales velocity.',
+            'financial-primary'
           )}
 
           {renderThreePointControl(
@@ -618,7 +680,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             1000000,
             10,
-            'Incident triage, forensics investigation, crisis management.'
+            'Incident triage, forensics investigation, crisis management.',
+            'financial-primary'
           )}
 
           {renderThreePointControl(
@@ -629,7 +692,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             1000000,
             10,
-            'Hardware re-imaging, key replacement, rebuild cost.'
+            'Hardware re-imaging, key replacement, rebuild cost.',
+            'financial-primary'
           )}
 
           {renderThreePointControl(
@@ -640,7 +704,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             1000000,
             10,
-            'Direct statutory penalties, contractual SLA fines.'
+            'Direct statutory penalties, contractual SLA fines.',
+            'financial-primary'
           )}
 
           {renderThreePointControl(
@@ -651,7 +716,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             1000000,
             10,
-            'Stolen IP, bidding handicap, proprietary leakage.'
+            'Stolen IP, bidding handicap, proprietary leakage.',
+            'financial-primary'
           )}
 
           {renderThreePointControl(
@@ -662,7 +728,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             1000000,
             10,
-            'Direct customer churn, marketing mitigation promotions.'
+            'Direct customer churn, marketing mitigation promotions.',
+            'financial-primary'
           )}
         </div>
       </div>
@@ -689,7 +756,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
               0,
               100,
               1,
-              'Likelihood (0-100%) that a primary event escalates into secondary stakeholder actions.'
+              'Likelihood (0-100%) that a primary event escalates into secondary stakeholder actions.',
+              'threat-frequency'
             )}
           </div>
 
@@ -701,7 +769,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             1000000,
             10,
-            'Major GDPR, CCPA, SEC regulatory enforcement actions.'
+            'Major GDPR, CCPA, SEC regulatory enforcement actions.',
+            'financial-secondary'
           )}
 
           {renderThreePointControl(
@@ -712,7 +781,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             1000000,
             10,
-            'Long-term stock valuation impact, systemic enterprise customer attrition.'
+            'Long-term stock valuation impact, systemic enterprise customer attrition.',
+            'financial-secondary'
           )}
 
           {renderThreePointControl(
@@ -723,7 +793,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             1000000,
             10,
-            'External class-action defense counsel, credit monitoring for victims.'
+            'External class-action defense counsel, credit monitoring for victims.',
+            'financial-secondary'
           )}
         </div>
       </div>
@@ -749,7 +820,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             8760,
             1,
-            'Duration of complete or partial degradation of service.'
+            'Duration of complete or partial degradation of service.',
+            'operational'
           )}
 
           {renderThreePointControl(
@@ -760,7 +832,8 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
             0,
             1000000,
             10,
-            'Quantity of exposed customer/employee records.'
+            'Quantity of exposed customer/employee records.',
+            'operational'
           )}
         </div>
       </div>
@@ -808,6 +881,12 @@ export const FairScenarioBuilder: React.FC<FairScenarioBuilderProps> = ({
         onCreateManualSnapshot={handleCreateManualSnapshot}
         onDeleteSnapshot={handleDeleteSnapshot}
         onUpdateSnapshotNote={handleUpdateSnapshotNote}
+      />
+
+      {/* Stakeholder Distribution Primer Modal */}
+      <StakeholderDistributionPrimerModal
+        isOpen={showDistributionPrimer}
+        onClose={() => setShowDistributionPrimer(false)}
       />
     </div>
   );

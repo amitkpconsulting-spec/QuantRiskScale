@@ -123,8 +123,15 @@ APP_URL=http://localhost:3000
 4. **Frontier AI & Tech**: Proprietary 70B+ Model Weights Exfiltration & Poisoning.
 
 ### Performing a FAIR Risk Simulation:
-1. **Select a Scenario** from the top scenario switcher or click **+ New Scenario**.
-2. **Calibrate 3-Point Estimates**: In the **Scenario Lab**, input Low, Most Likely, and High estimates for Loss Event Frequency and Loss Magnitude.
+1. **Stakeholder Guided Intake (Non-Math)**:
+   - Click **Guided Intake** on the top bar or inside the **New Scenario Modal** / **AI Advisory Drawer**.
+   - Walk through the **3-step non-mathematical interview**:
+     - *Step 1: Asset & Threat Context* (What system is at risk? Who is the threat actor?)
+     - *Step 2: Frequency & Likelihood* (Choose natural-language options like "Once every 2 years" or "3 to 5 times per year")
+     - *Step 3: Financial Impact & Mitigation* (Select executive loss tiers like "$100k - $500k" and mitigation posture)
+   - Click **Generate Calibrated Scenario & Launch Simulation**. The platform automatically converts human answers into Open FAIR™ Beta-PERT distribution parameters, saves to SQLite, and renders the Monte Carlo dashboard in real-time.
+2. **Power-User Parametric Mode**:
+   - In the **Scenario Lab**, directly edit Low, Mode, and High bounds for Loss Event Frequency (LEF) and Loss Magnitude (PLM/SLM).
 3. **Run Monte Carlo Analysis**: Select trial count (e.g., 10,000 to 50,000 iterations) and review the resulting ALE, 95th% VaR, and Loss Exceedance Curve.
 4. **Model Mitigations**: Enable Proposed Mitigations to calculate dollar savings and Return on Security Investment (ROSI).
 5. **Export Report**: Click **Export PDF** to generate an executive-ready board report.
@@ -134,6 +141,7 @@ APP_URL=http://localhost:3000
 ## 🗺️ Roadmap
 
 - [x] Full Open FAIR™ (O-RT / O-RA) taxonomy & Monte Carlo engine
+- [x] Stakeholder Guided Intake (3-step non-mathematical wizard with automated Beta-PERT mapping)
 - [x] In-browser WebAssembly SQLite persistence & database import/export
 - [x] Side-by-side What-If ROSI & residual risk comparison
 - [x] Executive PDF report generation with signature/sign-off blocks

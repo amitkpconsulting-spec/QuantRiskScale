@@ -27,6 +27,7 @@ import {
   ThreatRegisterItem,
   ThreePointEstimate
 } from '../types/fair';
+import { StakeholderIntakeWizard } from './StakeholderIntakeWizard';
 
 interface NewSimulationModalProps {
   isOpen: boolean;
@@ -307,6 +308,7 @@ export const NewSimulationModal: React.FC<NewSimulationModalProps> = ({
   threats,
   currentActiveScenario
 }) => {
+  const [creationMode, setCreationMode] = useState<'guided' | 'standard'>('guided');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('tpl-cloud-outage');
   const [name, setName] = useState<string>('Cloud Infrastructure & Kubernetes Microservices Outage');
   const [description, setDescription] = useState<string>('Cascading configuration error or external DDoS attack causing high-severity customer checkout outage.');
@@ -535,8 +537,52 @@ export const NewSimulationModal: React.FC<NewSimulationModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 space-y-6 overflow-y-auto font-mono text-xs">
+        {/* Mode Switcher Tabs */}
+        <div className="flex border-b border-zinc-800 bg-[#070709] px-6 font-mono text-xs shrink-0">
+          <button
+            onClick={() => setCreationMode('guided')}
+            className={`py-3 px-4 font-bold border-b-2 transition-colors flex items-center space-x-2 ${
+              creationMode === 'guided'
+                ? 'border-cyan-400 text-white bg-zinc-900/40'
+                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Stakeholder Guided Intake (Non-Math)</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
+              3 Steps
+            </span>
+          </button>
+          <button
+            onClick={() => setCreationMode('standard')}
+            className={`py-3 px-4 font-bold border-b-2 transition-colors flex items-center space-x-2 ${
+              creationMode === 'standard'
+                ? 'border-cyan-400 text-white bg-zinc-900/40'
+                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Pre-Calibrated Archetypes &amp; Parametric Lab</span>
+          </button>
+        </div>
+
+        {creationMode === 'guided' ? (
+          <div className="p-6 overflow-y-auto custom-scrollbar">
+            <StakeholderIntakeWizard
+              onApplyScenario={(newSc) => {
+                onCreated(newSc);
+                onClose();
+              }}
+              onCancel={onClose}
+              currency={currency}
+              initialAsset={assets[0]?.name}
+              initialThreat={threats[0]?.name}
+            />
+          </div>
+        ) : (
+          <>
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 overflow-y-auto font-mono text-xs custom-scrollbar">
           {/* Archetype / Template Selector */}
           <div>
             <div className="text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2.5 flex items-center justify-between">
@@ -940,7 +986,9 @@ export const NewSimulationModal: React.FC<NewSimulationModalProps> = ({
             <span>Create &amp; Run Monte Carlo Simulation</span>
           </button>
         </div>
-      </div>
-    </div>
+      </>
+    )}
+  </div>
+</div>
   );
 };

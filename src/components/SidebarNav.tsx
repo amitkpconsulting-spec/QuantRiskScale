@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Layers,
   FlaskConical,
@@ -8,6 +8,8 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   PanelLeftClose,
   PanelLeftOpen,
   Shield,
@@ -18,6 +20,7 @@ import {
 import { FairScenario, SimulationResult } from '../types/fair';
 import { formatAmount } from '../utils/distributions';
 import { useTheme } from '../context/ThemeContext';
+import { ThreatDomain } from '../data/threatCatalogs';
 
 export type WorkspaceId = 'cockpit' | 'lab' | 'ai-defense' | 'sqlite';
 
@@ -32,6 +35,8 @@ interface SidebarNavProps {
   onOpenAiCopilot: () => void;
   onOpenGlossary: () => void;
   onOpenPdfModal: () => void;
+  activeThreatDomain?: ThreatDomain;
+  onSelectThreatDomain?: (domain: ThreatDomain) => void;
 }
 
 export const SidebarNav: React.FC<SidebarNavProps> = ({
@@ -44,9 +49,12 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   onOpenQuickTune,
   onOpenAiCopilot,
   onOpenGlossary,
-  onOpenPdfModal
+  onOpenPdfModal,
+  activeThreatDomain = 'ai-owasp',
+  onSelectThreatDomain
 }) => {
   const { isReportLight } = useTheme();
+  const [isThreatDropdownOpen, setIsThreatDropdownOpen] = useState(false);
 
   const navItems = [
     {
@@ -64,8 +72,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     },
     {
       id: 'ai-defense' as WorkspaceId,
-      label: 'AI & Threat Defense',
-      subtitle: 'Model Defense & AI Register',
+      label: 'Threat Defence Scenarios',
+      subtitle: 'AI, InfoSec, Tech & SANS',
       icon: ShieldAlert
     },
     {
@@ -186,7 +194,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         </div>
 
         {/* Primary Workspace Nav */}
-        <div className="p-3 space-y-1.5">
+        <div className="p-3 space-y-1.5 w-full">
           {!isCollapsed && (
             <div
               className={`px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider ${
@@ -197,55 +205,127 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             </div>
           )}
 
-          {navItems.map(item => {
+          {navItems.map((item, index) => {
             const isActive = activeWorkspace === item.id;
+            const isThreatDefenseItem = item.id === 'ai-defense';
+
             return (
-              <button
-                key={item.id}
-                onClick={() => onSelectWorkspace(item.id)}
-                title={isCollapsed ? item.label : undefined}
-                className={`w-full flex items-center rounded-xl transition-all font-mono text-xs text-left ${
-                  isCollapsed ? 'justify-center p-3' : 'px-3 py-2.5 space-x-3'
-                } ${
-                  isActive
-                    ? isReportLight
-                      ? 'bg-slate-900 text-white font-bold shadow-sm'
-                      : 'bg-white text-black font-bold shadow-md'
-                    : isReportLight
-                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
-                }`}
-              >
-                <item.icon
-                  className={`w-4 h-4 shrink-0 ${
+              <React.Fragment key={item.id}>
+                <button
+                  onClick={() => {
+                    onSelectWorkspace(item.id);
+                    if (isThreatDefenseItem) {
+                      setIsThreatDropdownOpen(!isThreatDropdownOpen);
+                    }
+                  }}
+                  title={isCollapsed ? item.label : undefined}
+                  className={`w-full flex items-center rounded-xl transition-all font-mono text-xs text-left relative overflow-hidden group ${
+                    isCollapsed ? 'justify-center p-3' : 'px-3 py-2.5 space-x-3'
+                  } ${
                     isActive
                       ? isReportLight
-                        ? 'text-cyan-400'
-                        : 'text-black'
+                        ? 'bg-slate-900 text-white font-bold shadow-md ring-1 ring-slate-800'
+                        : 'bg-white text-black font-bold shadow-lg ring-1 ring-white/20'
                       : isReportLight
-                      ? 'text-slate-500'
-                      : 'text-zinc-400'
+                      ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                      : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
                   }`}
-                />
-                {!isCollapsed && (
-                  <div className="truncate">
-                    <div className="truncate font-sans font-semibold text-xs">{item.label}</div>
-                    <div
-                      className={`text-[10px] font-mono truncate ${
-                        isActive
-                          ? isReportLight
-                            ? 'text-slate-300'
-                            : 'text-zinc-700'
-                          : isReportLight
-                          ? 'text-slate-400'
-                          : 'text-zinc-400'
-                      }`}
-                    >
-                      {item.subtitle}
+                >
+                  {isActive && (
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${isReportLight ? 'bg-cyan-500' : 'bg-cyan-600'}`} />
+                  )}
+                  <item.icon
+                    className={`w-4 h-4 shrink-0 transition-colors ${
+                      isActive
+                        ? isReportLight
+                          ? 'text-cyan-400'
+                          : 'text-cyan-600'
+                        : isReportLight
+                        ? 'text-slate-500 group-hover:text-slate-900'
+                        : 'text-zinc-400 group-hover:text-white'
+                    }`}
+                  />
+                  {!isCollapsed && (
+                    <div className="truncate min-w-0 flex-1">
+                      <div className="truncate font-sans font-semibold text-xs leading-tight flex items-center justify-between">
+                        <span>{item.label}</span>
+                        {isThreatDefenseItem && (
+                          <ChevronDown
+                            className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 ${
+                              isThreatDropdownOpen || isActive
+                                ? 'rotate-180 text-cyan-400'
+                                : 'text-zinc-500'
+                            }`}
+                          />
+                        )}
+                      </div>
+                      <div
+                        className={`text-[10px] font-mono truncate mt-0.5 ${
+                          isActive
+                            ? isReportLight
+                              ? 'text-slate-300'
+                              : 'text-zinc-700'
+                            : isReportLight
+                            ? 'text-slate-400'
+                            : 'text-zinc-400'
+                        }`}
+                      >
+                        {item.subtitle}
+                      </div>
                     </div>
+                  )}
+                </button>
+
+                {/* Submenu Dropdown for Threat Defence Scenarios */}
+                {isThreatDefenseItem && !isCollapsed && (isThreatDropdownOpen || isActive) && (
+                  <div
+                    className={`pl-3 pr-1 py-1.5 space-y-1 text-[11px] font-mono rounded-xl animate-in fade-in duration-150 ${
+                      isReportLight
+                        ? 'bg-slate-200/70 border border-slate-300/80 shadow-xs'
+                        : 'bg-zinc-950/80 border border-zinc-800/80 shadow-inner'
+                    }`}
+                  >
+                    <div className="text-[9px] uppercase tracking-wider font-bold text-zinc-400 px-2 py-0.5 flex items-center justify-between">
+                      <span>Threat Category</span>
+                      <span className="text-[8px] text-cyan-400">FAIR Ready</span>
+                    </div>
+                    {[
+                      { id: 'ai-owasp' as ThreatDomain, label: 'AI Threat & OWASP', desc: 'AONA 30 & OWASP T1-T17', icon: '🤖' },
+                      { id: 'infosec' as ThreatDomain, label: 'Information Sec', desc: 'Ransomware, BEC, Insider', icon: '🛡️' },
+                      { id: 'tech' as ThreatDomain, label: 'Technology Threats', desc: 'Cloud Outage, API, DDoS', icon: '⚡' },
+                      { id: 'sans' as ThreatDomain, label: 'SANS Top 25 / CWE', desc: 'SQLi, RCE, Auth Bypass', icon: '🔍' },
+                      { id: 'regulatory' as ThreatDomain, label: 'Regulatory Risk & Compliance', desc: 'DPDPA ₹250 Cr, GDPR €20M / 4%, SEC', icon: '📋' }
+                    ].map(sub => {
+                      const isSubActive = isActive && activeThreatDomain === sub.id;
+                      return (
+                        <button
+                          key={sub.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectWorkspace('ai-defense');
+                            if (onSelectThreatDomain) onSelectThreatDomain(sub.id);
+                          }}
+                          className={`w-full text-left px-2 py-1.5 rounded-lg flex items-center space-x-2 transition-all group ${
+                            isSubActive
+                              ? isReportLight
+                                ? 'bg-slate-900 text-white font-bold shadow-xs'
+                                : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold'
+                              : isReportLight
+                              ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-300/60'
+                              : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+                          }`}
+                        >
+                          <span className="text-xs shrink-0">{sub.icon}</span>
+                          <div className="truncate min-w-0 flex-1">
+                            <div className="truncate font-sans text-xs">{sub.label}</div>
+                            <div className="text-[9px] text-zinc-400 truncate font-mono">{sub.desc}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
-              </button>
+              </React.Fragment>
             );
           })}
         </div>

@@ -491,3 +491,7 @@ Provide concrete recommendations to debias the estimates according to Hubbard's 
     latencyMs: Math.round(performance.now() - startTime)
   };
 }
+
+export const executeAiPrompt = (req: AiPromptRequest, config: LocalAiEndpointConfig) =>
+  executeFairAiAnalysis(config, req);
+
